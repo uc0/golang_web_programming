@@ -1,5 +1,7 @@
 package my_test_d
 
-func Hi() {
+import "fmt"
 
+func Hi() {
+	fmt.Println("a")
 }
