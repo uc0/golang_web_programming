@@ -7,5 +7,5 @@ func Hi() {
 }
 
 func Hello() {
-	fmt.Println()
+	fmt.Println("afdaf")
 }
