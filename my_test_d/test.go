@@ -13,3 +13,7 @@ func Hello() {
 func Hihih() {
 	fmt.Println("@")
 }
+
+func login() {
+	fmt.Println("@")
+}
