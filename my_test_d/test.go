@@ -17,3 +17,7 @@ func Hihih() {
 func login() {
 	fmt.Println("@")
 }
+
+func logout() {
+	fmt.Println()
+}
