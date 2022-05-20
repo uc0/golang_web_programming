@@ -21,3 +21,7 @@ func login() {
 func logout() {
 	fmt.Println()
 }
+
+func t1() {
+	fmt.Println()
+}
