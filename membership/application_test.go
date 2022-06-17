@@ -64,7 +64,7 @@ func TestUpdate(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotEmpty(t, res.ID)
 		assert.NotEmpty(t, res.UserName)
-		assert.Equal(t, req.MembershipType, res.MembershipType)
+		assert.NotEmpty(t, res.MembershipType)
 	})
 
 	t.Run("수정하려는 사용자의 이름이 이미 존재하는 사용자 이름이라면 예외 처리한다.", func(t *testing.T) {
