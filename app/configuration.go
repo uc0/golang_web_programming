@@ -3,28 +3,28 @@ package app
 import (
 	"comento_git_practice/app/membership"
 	"github.com/labstack/echo"
-	"net/http"
 )
 
 type Config struct {
-	MembershipApplication membership.Application
+	Controller membership.Controller
 }
 
 func DefaultConfig() *Config {
 	data := map[string]membership.Membership{}
-	application := membership.NewApplication(*membership.NewRepository(data))
+	service := membership.NewService(*membership.NewRepository(data))
+	controller := membership.NewController(*service)
 	return &Config{
-		MembershipApplication: *application,
+		Controller: *controller,
 	}
 }
 
 func NewEcho(config Config) *echo.Echo {
 	e := echo.New()
 
-	e.GET("/memberships", func(c echo.Context) error {
-		// config.MembershipApplication.Get()
-		return c.JSON(http.StatusOK, "hello")
-	})
+	controller := config.Controller
+
+	e.GET("/memberships", controller.GetByID)
+	e.POST("/memberships", controller.Create)
 
 	return e
 }

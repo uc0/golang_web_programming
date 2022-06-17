@@ -11,8 +11,9 @@ import (
 
 func TestTossRecreate(t *testing.T) {
 	data := map[string]membership.Membership{}
-	application := membership.NewApplication(*membership.NewRepository(data))
-	handler := app.NewEcho(app.Config{MembershipApplication: *application})
+	service := membership.NewService(*membership.NewRepository(data))
+	controller := membership.NewController(*service)
+	handler := app.NewEcho(app.Config{Controller: *controller})
 
 	e := httpexpect.WithConfig(httpexpect.Config{
 		Client: &http.Client{
