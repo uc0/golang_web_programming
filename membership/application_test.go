@@ -62,9 +62,9 @@ func TestUpdate(t *testing.T) {
 		res, err := app.Update(req)
 
 		assert.Nil(t, err)
-		assert.NotEmpty(t, res.ID)
-		assert.NotEmpty(t, res.UserName)
-		assert.NotEmpty(t, res.MembershipType)
+		assert.Equal(t, createRes.ID, res.ID)
+		assert.Equal(t, "jenny", res.UserName)
+		assert.Equal(t, "toss", res.MembershipType)
 	})
 
 	t.Run("수정하려는 사용자의 이름이 이미 존재하는 사용자 이름이라면 예외 처리한다.", func(t *testing.T) {
@@ -75,6 +75,7 @@ func TestUpdate(t *testing.T) {
 		_, err := app.Update(req)
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "UserName already exists", err.Error())
 	})
 
 	t.Run("멤버십 아이디를 입력하지 않은 경우, 예외 처리한다.", func(t *testing.T) {
@@ -85,6 +86,7 @@ func TestUpdate(t *testing.T) {
 		_, err := app.Update(req)
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "ID cannot be empty", err.Error())
 	})
 
 	t.Run("사용자 이름을 입력하지 않은 경우, 예외 처리한다.", func(t *testing.T) {
@@ -95,6 +97,7 @@ func TestUpdate(t *testing.T) {
 		_, err := app.Update(req)
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "UserName cannot be empty", err.Error())
 	})
 
 	t.Run("멤버쉽 타입을 입력하지 않은 경우, 예외 처리한다.", func(t *testing.T) {
@@ -105,6 +108,7 @@ func TestUpdate(t *testing.T) {
 		_, err := app.Update(req)
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "MembershipType cannot be empty", err.Error())
 	})
 
 	t.Run("주어진 멤버쉽 타입이 아닌 경우, 예외 처리한다.", func(t *testing.T) {
@@ -115,6 +119,7 @@ func TestUpdate(t *testing.T) {
 		_, err := app.Update(req)
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "MembershipType not supported", err.Error())
 	})
 }
 
@@ -133,6 +138,7 @@ func TestDelete(t *testing.T) {
 		err := app.Delete("")
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "ID cannot be empty", err.Error())
 	})
 
 	t.Run("입력한 id가 존재하지 않을 때 예외 처리한다.", func(t *testing.T) {
@@ -140,5 +146,6 @@ func TestDelete(t *testing.T) {
 		err := app.Delete("foo")
 
 		assert.NotNil(t, err)
+		assert.Equal(t, "ID not exists", err.Error())
 	})
 }
