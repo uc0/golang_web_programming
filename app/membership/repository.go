@@ -1,6 +1,8 @@
 package membership
 
-import "errors"
+import (
+	"errors"
+)
 
 type Repository struct {
 	data map[string]Membership
@@ -43,4 +45,20 @@ func (r *Repository) GetByUserName(userName string) (Membership, error) {
 		}
 	}
 	return Membership{}, errors.New("not found membership")
+}
+
+func (r *Repository) GetMany(offset int, limit int) []Membership {
+	var memberships []Membership
+	cursor := 0
+
+	for _, membership := range r.data {
+		if limit != 0 && cursor >= (offset+limit) {
+			break
+		}
+		if cursor >= offset {
+			memberships = append(memberships, membership)
+		}
+		cursor++
+	}
+	return memberships
 }

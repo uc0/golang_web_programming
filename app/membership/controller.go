@@ -28,6 +28,14 @@ func (controller Controller) GetByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func (controller Controller) GetMany(c echo.Context) error {
+	offset := c.QueryParam("offset")
+	limit := c.QueryParam("limit")
+	res := controller.service.GetMany(offset, limit)
+
+	return c.JSON(http.StatusOK, res)
+}
+
 func (controller Controller) Update(c echo.Context) error {
 	req := new(UpdateRequest)
 	if err := c.Bind(req); err != nil {

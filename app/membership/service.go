@@ -3,6 +3,7 @@ package membership
 import (
 	"github.com/google/uuid"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -56,6 +57,24 @@ func (service *Service) GetByID(id string) GetResponse {
 	}
 }
 
+func (service *Service) GetMany(offsetStr string, limitStr string) GetManyResponse {
+	offset, err := convertQueryParamToInt(offsetStr)
+	if err != nil {
+		return GetManyResponse{Code: http.StatusBadRequest, Message: "'offset' value is not integer"}
+	}
+	limit, err := convertQueryParamToInt(limitStr)
+	if err != nil {
+		return GetManyResponse{Code: http.StatusBadRequest, Message: "'limit' value is not integer"}
+	}
+
+	membership := service.repository.GetMany(offset, limit)
+	return GetManyResponse{
+		Code:        http.StatusOK,
+		Message:     http.StatusText(http.StatusOK),
+		Memberships: membership,
+	}
+}
+
 func (service *Service) Update(request UpdateRequest) UpdateResponse {
 	if request.ID == "" {
 		return UpdateResponse{Code: http.StatusBadRequest, Message: "ID cannot be empty"}
@@ -98,4 +117,18 @@ func (service *Service) Delete(id string) DeleteResponse {
 	}
 
 	return DeleteResponse{Code: http.StatusOK, Message: http.StatusText(http.StatusOK)}
+}
+
+func convertQueryParamToInt(param string) (int, error) {
+	if param == "" {
+		return 0, nil
+	}
+	paramInt, err := strconv.Atoi(param)
+	if err != nil {
+		return paramInt, err
+	}
+	if paramInt < 0 {
+		return 0, nil
+	}
+	return paramInt, nil
 }

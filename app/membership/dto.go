@@ -20,6 +20,12 @@ type GetResponse struct {
 	MembershipType string `json:"membership_type"`
 }
 
+type GetManyResponse struct {
+	Code        int          `json:"-"`
+	Message     string       `json:"message"`
+	Memberships []Membership `json:"memberships"`
+}
+
 type UpdateRequest struct {
 	ID             string `json:"id"`
 	UserName       string `json:"user_name"`

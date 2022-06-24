@@ -24,6 +24,7 @@ func NewEcho(config Config) *echo.Echo {
 	controller := config.Controller
 
 	e.GET("/memberships/:id", controller.GetByID)
+	e.GET("/memberships", controller.GetMany)
 	e.POST("/memberships", controller.Create)
 	e.PUT("/memberships", controller.Update)
 	e.DELETE("/memberships/:id", controller.Delete)
