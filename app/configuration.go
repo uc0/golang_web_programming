@@ -3,6 +3,7 @@ package app
 import (
 	"comento_git_practice/app/logo"
 	"comento_git_practice/app/membership"
+	"comento_git_practice/app/user"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"log"
@@ -11,15 +12,23 @@ import (
 type Config struct {
 	MembershipController membership.Controller
 	LogoController       logo.Controller
+	UserController       user.Controller
+	UserMiddleware       user.Middleware
 }
 
 func DefaultConfig() *Config {
 	data := map[string]membership.Membership{}
-	service := membership.NewService(*membership.NewRepository(data))
-	controller := membership.NewController(*service)
+
+	membershipService := membership.NewService(*membership.NewRepository(data))
+	membershipController := membership.NewController(*membershipService)
+
+	userService := user.NewService(user.DefaultSecret)
+
 	return &Config{
-		MembershipController: *controller,
+		MembershipController: *membershipController,
 		LogoController:       *logo.NewController(),
+		UserController:       *user.NewController(*userService),
+		UserMiddleware:       *user.NewMiddleware(*membership.NewRepository(data)),
 	}
 }
 
@@ -38,13 +47,22 @@ func NewEcho(config Config) *echo.Echo {
 		}
 	}))
 
-	e.GET("/memberships/:id", config.MembershipController.GetByID)
-	e.GET("/memberships", config.MembershipController.GetMany)
-	e.POST("/memberships", config.MembershipController.Create)
-	e.PUT("/memberships", config.MembershipController.Update)
-	e.DELETE("/memberships/:id", config.MembershipController.Delete)
+	membershipController := config.MembershipController
 
-	e.GET("/logo", config.LogoController.Get)
+	userController := config.UserController
+	userMiddleware := config.UserMiddleware
+
+	logoController := config.LogoController
+
+	jwtMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{Claims: &user.Claims{}, SigningKey: user.DefaultSecret})
+
+	e.POST("/login", userController.Login)
+	e.GET("/memberships/:id", config.MembershipController.GetByID)
+	e.GET("/memberships", membershipController.GetMany)
+	e.POST("/memberships", membershipController.Create)
+	e.PUT("/memberships", membershipController.Update)
+	e.DELETE("/memberships/:id", membershipController.Delete)
+	e.GET("/logo", logoController.Get)
 
 	return e
 }

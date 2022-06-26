@@ -50,3 +50,7 @@ func (controller Controller) Delete(c echo.Context) error {
 
 	return c.JSON(res.Code, res)
 }
+
+func (controller Controller) GetAll(c echo.Context) error {
+	return c.JSON(http.StatusOK, "hello world")
+}
