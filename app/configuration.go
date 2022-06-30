@@ -1,6 +1,7 @@
 package app
 
 import (
+	"comento_git_practice/app/logo"
 	"comento_git_practice/app/membership"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -8,7 +9,8 @@ import (
 )
 
 type Config struct {
-	Controller membership.Controller
+	MembershipController membership.Controller
+	LogoController       logo.Controller
 }
 
 func DefaultConfig() *Config {
@@ -16,7 +18,8 @@ func DefaultConfig() *Config {
 	service := membership.NewService(*membership.NewRepository(data))
 	controller := membership.NewController(*service)
 	return &Config{
-		Controller: *controller,
+		MembershipController: *controller,
+		LogoController:       *logo.NewController(),
 	}
 }
 
@@ -35,13 +38,13 @@ func NewEcho(config Config) *echo.Echo {
 		}
 	}))
 
-	controller := config.Controller
+	e.GET("/memberships/:id", config.MembershipController.GetByID)
+	e.GET("/memberships", config.MembershipController.GetMany)
+	e.POST("/memberships", config.MembershipController.Create)
+	e.PUT("/memberships", config.MembershipController.Update)
+	e.DELETE("/memberships/:id", config.MembershipController.Delete)
 
-	e.GET("/memberships/:id", controller.GetByID)
-	e.GET("/memberships", controller.GetMany)
-	e.POST("/memberships", controller.Create)
-	e.PUT("/memberships", controller.Update)
-	e.DELETE("/memberships/:id", controller.Delete)
+	e.GET("/logo", config.LogoController.Get)
 
 	return e
 }
