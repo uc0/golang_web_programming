@@ -57,11 +57,13 @@ func NewEcho(config Config) *echo.Echo {
 	jwtMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{Claims: &user.Claims{}, SigningKey: user.DefaultSecret})
 
 	e.POST("/login", userController.Login)
-	e.GET("/memberships/:id", config.MembershipController.GetByID)
-	e.GET("/memberships", membershipController.GetMany)
+
+	e.GET("/memberships/:id", config.MembershipController.GetByID, jwtMiddleware, userMiddleware.ValidateMemberByParam)
+	e.GET("/memberships", membershipController.GetMany, jwtMiddleware, userMiddleware.ValidateAdmin)
 	e.POST("/memberships", membershipController.Create)
-	e.PUT("/memberships", membershipController.Update)
-	e.DELETE("/memberships/:id", membershipController.Delete)
+	e.PUT("/memberships", membershipController.Update, jwtMiddleware, userMiddleware.ValidateOnlyMemberByBody)
+	e.DELETE("/memberships/:id", membershipController.Delete, jwtMiddleware, userMiddleware.ValidateOnlyMemberByParam)
+
 	e.GET("/logo", logoController.Get)
 
 	return e
