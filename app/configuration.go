@@ -47,22 +47,19 @@ func NewEcho(config Config) *echo.Echo {
 		}
 	}))
 
+	jwtMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{Claims: &user.Claims{}, SigningKey: user.DefaultSecret})
 	membershipController := config.MembershipController
-
 	userController := config.UserController
 	userMiddleware := config.UserMiddleware
-
 	logoController := config.LogoController
-
-	jwtMiddleware := middleware.JWTWithConfig(middleware.JWTConfig{Claims: &user.Claims{}, SigningKey: user.DefaultSecret})
 
 	e.POST("/login", userController.Login)
 
-	e.GET("/memberships/:id", config.MembershipController.GetByID, jwtMiddleware, userMiddleware.ValidateMemberByParam)
+	e.GET("/memberships/:id", config.MembershipController.GetByID, jwtMiddleware, userMiddleware.ValidateMemberOrAdminByParam)
 	e.GET("/memberships", membershipController.GetMany, jwtMiddleware, userMiddleware.ValidateAdmin)
 	e.POST("/memberships", membershipController.Create)
-	e.PUT("/memberships", membershipController.Update, jwtMiddleware, userMiddleware.ValidateOnlyMemberByBody)
-	e.DELETE("/memberships/:id", membershipController.Delete, jwtMiddleware, userMiddleware.ValidateOnlyMemberByParam)
+	e.PUT("/memberships", membershipController.Update, jwtMiddleware, userMiddleware.ValidateMemberByBody)
+	e.DELETE("/memberships/:id", membershipController.Delete, jwtMiddleware, userMiddleware.ValidateMemberByParam)
 
 	e.GET("/logo", logoController.Get)
 

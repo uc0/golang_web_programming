@@ -25,33 +25,26 @@ func (m Middleware) ValidateAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m Middleware) ValidateOnlyMemberByParam(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		err := m.validateAuth(c, false, false)
-		if err != nil {
-			return err
-		}
-
-		return next(c)
-	}
-}
-
 func (m Middleware) ValidateMemberByParam(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		err := m.validateAuth(c, false, true)
-		if err != nil {
-			m.ValidateAdmin(next)
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*Claims)
+		mem, _ := m.membershipRepository.GetByUserName(claims.Name)
+		if c.Param("id") != mem.ID {
+			return echo.ErrUnauthorized
 		}
 
 		return next(c)
 	}
 }
 
-func (m Middleware) ValidateOnlyMemberByBody(next echo.HandlerFunc) echo.HandlerFunc {
+func (m Middleware) ValidateMemberOrAdminByParam(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		err := m.validateAuth(c, true, false)
-		if err != nil {
-			return err
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*Claims)
+		mem, _ := m.membershipRepository.GetByUserName(claims.Name)
+		if c.Param("id") != mem.ID {
+			m.ValidateAdmin(next)
 		}
 
 		return next(c)
@@ -60,44 +53,17 @@ func (m Middleware) ValidateOnlyMemberByBody(next echo.HandlerFunc) echo.Handler
 
 func (m Middleware) ValidateMemberByBody(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		err := m.validateAuth(c, true, true)
-		if err != nil {
-			m.ValidateAdmin(next)
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*Claims)
+		mem, _ := m.membershipRepository.GetByUserName(claims.Name)
+		body := make(map[string]string)
+		if err := c.Bind(body); err != nil {
+			return echo.ErrUnauthorized
+		}
+		if body["id"] != mem.ID {
+			return echo.ErrUnauthorized
 		}
 
 		return next(c)
 	}
-}
-
-func (m Middleware) validateAuth(c echo.Context, hasBody bool, canAdmin bool) error {
-	isUnauthorized := false
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*Claims)
-	mem, _ := m.membershipRepository.GetByUserName(claims.Name)
-
-	if hasBody {
-		body := make(map[string]string)
-		if err := c.Bind(body); err != nil {
-			isUnauthorized = true
-		}
-		if body["id"] != mem.ID {
-			isUnauthorized = true
-		}
-
-		if isUnauthorized && !canAdmin {
-			return echo.ErrUnauthorized
-		}
-
-		return nil
-	}
-
-	if c.Param("id") != mem.ID {
-		isUnauthorized = true
-	}
-
-	if isUnauthorized && !canAdmin {
-		return echo.ErrUnauthorized
-	}
-
-	return nil
 }
