@@ -2,6 +2,7 @@ package alarm_ex1
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"testing"
 )
 
@@ -12,8 +13,8 @@ func TestService(t *testing.T) {
 		service := Service{client, maxRetry}
 
 		receiver := "01022334444"
-		//client.On("Send", newSuccessSMSRequest(receiver)).
-		//	Return(SMSResponse{http.StatusOK, "ok"}, nil)
+		client.On("Send", newSuccessSMSRequest(receiver)).
+			Return(SMSResponse{http.StatusTooManyRequests, "Too Many Request"}, nil)
 
 		err := service.Send(receiver)
 		assert.ErrorIs(t, err, SMSFailErr)
@@ -26,8 +27,10 @@ func TestService(t *testing.T) {
 		service := Service{client, maxRetry}
 
 		receiver := "01022334444"
-		//client.On("Send", newSuccessSMSRequest(receiver)).
-		//	Return(SMSResponse{http.StatusOK, "ok"}, nil)
+		client.On("Send", newSuccessSMSRequest(receiver)).
+			Return(SMSResponse{http.StatusTooManyRequests, "Too Many Request"}, nil).Once()
+		client.On("Send", newSuccessSMSRequest(receiver)).
+			Return(SMSResponse{http.StatusOK, "ok"}, nil).Once()
 
 		err := service.Send(receiver)
 		assert.Nil(t, err)
@@ -40,8 +43,8 @@ func TestService(t *testing.T) {
 		service := Service{client, maxRetry}
 
 		receiver := "01022334444"
-		//client.On("Send", newSuccessSMSRequest(receiver)).
-		//	Return(SMSResponse{http.StatusOK, "ok"}, nil)
+		client.On("Send", newSuccessSMSRequest(receiver)).
+			Return(SMSResponse{http.StatusInternalServerError, "Internal Server Error"}, nil)
 
 		err := service.Send(receiver)
 		assert.ErrorIs(t, err, SMSFailErr)

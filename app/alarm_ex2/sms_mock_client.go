@@ -14,7 +14,7 @@ func NewMockSMSClient() *MockSMSClient {
 
 }
 
-func (m MockSMSClient) Send(request SMSRequest) (SMSResponse, error) {
+func (m *MockSMSClient) Send(request SMSRequest) (SMSResponse, error) {
 	args := m.Called(request)
 	return args.Get(0).(SMSResponse), args.Error(1)
 }
